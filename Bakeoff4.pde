@@ -22,9 +22,12 @@ int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false;
 int countDownTimerWait = 0;
-
+int bwidth = 500;
+int bheight = 500;
 void setup() {
-  size(600, 600); //you can change this to be fullscreen
+  size(1000, 1000,P2D); //you can change this to be fullscreen
+  System.out.println(displayWidth);
+  System.out.println(displayHeight);
   frameRate(60);
   sensor = new KetaiSensor(this);
   sensor.start();
@@ -78,7 +81,9 @@ void draw() {
       fill(0, 255, 0);
     else
       fill(180, 180, 180);
-    ellipse(300, i*150+100, 100, 100);
+    stroke(100);
+    rect((bwidth/2)+bwidth*(i%2), (bheight/2) + bheight*((i < 2)? 0 : 1), bwidth, bheight);
+    noStroke();
   }
 
   if (light>proxSensorThreshold)
@@ -142,13 +147,20 @@ void onAccelerometerEvent(float x, float y, float z)
     countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
   }
 }
+boolean between(float x,float y,float width)  {
+  return (x <= y && y <= x+width);
+}
 
 int hitTest() 
 {
-  for (int i=0; i<4; i++)
-    if (dist(300, i*150+100, cursorX, cursorY)<100)
+   for (int i=0; i<4; i++)
+  {
+    if(between(bwidth*(i%2),cursorX,(bwidth/2)+bwidth) && between( bheight*((i < 2)? 0 : 1),cursorY,(bheight/2) +bheight))
+    {
+      System.out.println(i);
       return i;
-
+    }
+  }
   return -1;
 }
 
