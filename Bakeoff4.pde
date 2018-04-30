@@ -6,8 +6,9 @@ KetaiSensor sensor;
 
 float cursorX, cursorY;
 float light = 0; 
-float proxSensorThreshold = 20; //you will need to change this per your device.
-
+float proxSensorThreshold = 5; //you will need to change this per your device.
+int bwidth = 500;
+int bheight = 500;
 private class Target
 {
   int target = 0;
@@ -22,12 +23,9 @@ int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false;
 int countDownTimerWait = 0;
-int bwidth = 500;
-int bheight = 500;
+
 void setup() {
   size(1000, 1000,P2D); //you can change this to be fullscreen
-  System.out.println(displayWidth);
-  System.out.println(displayHeight);
   frameRate(60);
   sensor = new KetaiSensor(this);
   sensor.start();
@@ -81,6 +79,9 @@ void draw() {
       fill(0, 255, 0);
     else
       fill(180, 180, 180);
+    //stroke(200);
+    //rect(50,50,100,100);
+    //noStroke();
     stroke(100);
     rect((bwidth/2)+bwidth*(i%2), (bheight/2) + bheight*((i < 2)? 0 : 1), bwidth, bheight);
     noStroke();
@@ -111,8 +112,8 @@ void onAccelerometerEvent(float x, float y, float z)
 
   if (light>proxSensorThreshold) //only update cursor, if light is low
   {
-    cursorX = 300+x*40; //cented to window and scaled
-    cursorY = 300-y*40; //cented to window and scaled
+    cursorX = 300+x*200; //cented to window and scaled
+    cursorY = 300-y*200; //cented to window and scaled
   }
 
   Target t = targets.get(index);
@@ -135,7 +136,7 @@ void onAccelerometerEvent(float x, float y, float z)
           trialIndex--; //move back one trial as penalty!
         println("right target, WRONG z direction!");
       }
-      countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
+      countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
     } 
   } else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
   { 
@@ -150,17 +151,13 @@ void onAccelerometerEvent(float x, float y, float z)
 boolean between(float x,float y,float width)  {
   return (x <= y && y <= x+width);
 }
-
 int hitTest() 
 {
-   for (int i=0; i<4; i++)
-  {
-    if(between(bwidth*(i%2),cursorX,(bwidth/2)+bwidth) && between( bheight*((i < 2)? 0 : 1),cursorY,(bheight/2) +bheight))
-    {
-      System.out.println(i);
+  for (int i=0; i<4; i++)
+    //if (50+i%2*bwidth<cursorX && 50+(i%2+1)*bwidth > cursorX && 50+i%2*bheight<cursorY && 50+(i%2+1)*bheight > cursorY)
+      if(between(bwidth*(i%2),cursorX, bwidth) && between( bheight*((i < 2)? 0 : 1),cursorY,bheight))
       return i;
-    }
-  }
+
   return -1;
 }
 
