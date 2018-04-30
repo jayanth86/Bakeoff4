@@ -114,6 +114,15 @@ void onAccelerometerEvent(float x, float y, float z)
   {
     cursorX = 300+x*200; //cented to window and scaled
     cursorY = 300-y*200; //cented to window and scaled
+    if (cursorX < 50)
+     cursorX = 50;
+    if (cursorX > 2*bwidth - 50)
+     cursorX = 2*bwidth - 50;
+      if (cursorY < 50)
+     cursorY = 50;
+    if (cursorY > 2*bheight - 50)
+     cursorY = 2*bheight - 50;
+     
   }
 
   Target t = targets.get(index);
