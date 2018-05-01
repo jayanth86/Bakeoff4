@@ -6,7 +6,7 @@ KetaiSensor sensor;
 
 float cursorX, cursorY;
 float light = 0; 
-float proxSensorThreshold = 5; //you will need to change this per your device.
+float proxSensorThreshold = 10; //you will need to change this per your device.
 int bwidth = 500;
 int bheight = 500;
 private class Target
