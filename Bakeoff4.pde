@@ -6,6 +6,7 @@ KetaiSensor sensor;
 float cursorX, cursorY;
 float light = 0; 
 float proxSensorThreshold = 30; //you will need to change this per your device.
+boolean tapped = false;
 int bwidth = 500;
 int bheight = 500;
 float prevz = 0;;
@@ -48,6 +49,7 @@ void setup() {
   }
 
   Collections.shuffle(targets); // randomize the order of the button;
+  tapped = false;
 }
 
 void draw() {
@@ -90,9 +92,9 @@ void draw() {
     noStroke();
   }
 
-  if (light>proxSensorThreshold)
+  if (!tapped)
     fill(180, 0, 0);
-  else
+  else  {
     if(targets.get(index).action==0)  {
       image(CCW,bwidth/2,bheight/2,bwidth,bheight);
     }
@@ -100,6 +102,7 @@ void draw() {
       image(CW,bwidth/2,bheight/2,bwidth,bheight);
     }
     fill(255, 0, 0);
+  }
   ellipse(cursorX, cursorY, 50, 50);
 
   fill(255);//white
@@ -122,10 +125,12 @@ void onGyroscopeEvent(float x, float y, float z)
   if (t==null)
     return;
  
-  if (light<=proxSensorThreshold && abs(z-prevz)>1 && countDownTimerWait<0) //possible hit event
+  if (tapped && abs(z-prevz)>1 && countDownTimerWait<0) //possible hit event
   {
+    
     if (hitTest()==t.target)//check if it is the right target
     {
+      
       //println(z-9.8); use this to check z output!
       if (((z-prevz)>1 && t.action==0) || ((z-prevz)<-1 && t.action==1))
       {
@@ -137,16 +142,23 @@ void onGyroscopeEvent(float x, float y, float z)
           trialIndex--; //move back one trial as penalty!
         System.out.println("right target, WRONG z direction!");
       }
-      countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
+      countDownTimerWait=8;
+      tapped = false;
+      cursorX =500;
+      cursorY =500;
+      //wait roughly 0.5 sec before allowing next trial
     } 
-  } else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
+  } else if (tapped && countDownTimerWait<0 && hitTest()!=t.target)
   { 
+    tapped = false;
     System.out.println("wrong round 1 action!"); 
 
     if (trialIndex>0)
       trialIndex--; //move back one trial as penalty!
 
-    countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
+    countDownTimerWait=8; //wait roughly 0.5 sec before allowing next trial
+    cursorX =500;
+    cursorY =500;
   }
   prevz = z;
 }
@@ -158,62 +170,36 @@ void onAccelerometerEvent(float x, float y, float z)
   if (userDone || index>=targets.size())
     return;
 
-  if (light>proxSensorThreshold) //only update cursor, if light is low
+  if (!tapped && countDownTimerWait<0) //only update cursor, if light is low
   {
-    cursorX = 500-x*100; //cented to window and scaled
-    cursorY = 500+y*100; //cented to window and scaled
+    cursorX = cursorX-x*1000; //cented to window and scaled
+    cursorY = cursorY+y*1000; //cented to window and scaled
     if (cursorX < 50)
      cursorX = 50;
     if (cursorX > 2*bwidth - 50)
      cursorX = 2*bwidth - 50;
-      if (cursorY < 50)
+     if (cursorY < 50)
      cursorY = 50;
     if (cursorY > 2*bheight - 50)
      cursorY = 2*bheight - 50;
      
   }
 
-  //Target t = targets.get(index);
 
-  //if (t==null)
-  //  return;
- 
-  //if (light<=proxSensorThreshold && abs(z-9.8)>4 && countDownTimerWait<0) //possible hit event
-  //{
-  //  if (hitTest()==t.target)//check if it is the right target
-  //  {
-  //    //println(z-9.8); use this to check z output!
-  //    if (((z-9.8)>4 && t.action==0) || ((z-9.8)<-4 && t.action==1))
-  //    {
-  //      System.out.println("Right target, right z direction!");
-  //      trialIndex++; //next trial!
-  //    } else
-  //    {
-  //      if (trialIndex>0)
-  //        trialIndex--; //move back one trial as penalty!
-  //      System.out.println("right target, WRONG z direction!");
-  //    }
-  //    countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
-  //  } 
-  //} else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
-  //{ 
-  //  System.out.println("wrong round 1 action!"); 
-
-  //  if (trialIndex>0)
-  //    trialIndex--; //move back one trial as penalty!
-
-  //  countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
-  //}
 }
 boolean between(float x,float y,float width)  {
   return (x <= y && y <= x+width);
 }
 int hitTest() 
 {
+  
   for (int i=0; i<4; i++)
     //if (50+i%2*bwidth<cursorX && 50+(i%2+1)*bwidth > cursorX && 50+i%2*bheight<cursorY && 50+(i%2+1)*bheight > cursorY)
-      if(between(bwidth*(i%2),cursorX, bwidth) && between( bheight*((i < 2)? 0 : 1),cursorY,bheight))
-      return i;
+      if(between(bwidth*(i%2),cursorX, bwidth) && between( bheight*((i < 2)? 0 : 1),cursorY,bheight))  {
+         
+         return i;
+      }
+      
 
   return -1;
 }
@@ -222,4 +208,6 @@ int hitTest()
 void onLightEvent(float v) //this just updates the light value
 {
   light = v;
+  if(light<=proxSensorThreshold)
+    tapped = true;
 }
