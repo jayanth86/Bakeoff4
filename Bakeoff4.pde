@@ -5,7 +5,7 @@ KetaiSensor sensor;
 
 float cursorX, cursorY;
 float light = 0; 
-float proxSensorThreshold = 15; //you will need to change this per your device.
+float proxSensorThreshold = 30; //you will need to change this per your device.
 int bwidth = 500;
 int bheight = 500;
 float prevz = 0;;
@@ -122,12 +122,12 @@ void onGyroscopeEvent(float x, float y, float z)
   if (t==null)
     return;
  
-  if (light<=proxSensorThreshold && abs(z-prevz)>4 && countDownTimerWait<0) //possible hit event
+  if (light<=proxSensorThreshold && abs(z-prevz)>1 && countDownTimerWait<0) //possible hit event
   {
     if (hitTest()==t.target)//check if it is the right target
     {
       //println(z-9.8); use this to check z output!
-      if (((z-prevz)>.3 && t.action==0) || ((z-prevz)<-.3 && t.action==1))
+      if (((z-prevz)>1 && t.action==0) || ((z-prevz)<-1 && t.action==1))
       {
         System.out.println("Right target, right z direction!");
         trialIndex++; //next trial!
