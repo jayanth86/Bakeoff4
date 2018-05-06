@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import ketai.sensors.*;
-
 KetaiSensor sensor;
 
 float cursorX, cursorY;
@@ -9,6 +8,7 @@ float light = 0;
 float proxSensorThreshold = 15; //you will need to change this per your device.
 int bwidth = 500;
 int bheight = 500;
+float prevz = 0;;
 private class Target
 {
   int target = 0;
@@ -23,8 +23,11 @@ int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false;
 int countDownTimerWait = 0;
-
+PImage CW;
+PImage CCW;
 void setup() {
+  CW = loadImage("CW.png");
+  CCW = loadImage("CCW.png");
   size(1000, 1000,P2D); //you can change this to be fullscreen
   frameRate(60);
   sensor = new KetaiSensor(this);
@@ -54,7 +57,7 @@ void draw() {
   //println("light val: " + light +", cursor accel vals: " + cursorX +"/" + cursorY);
   background(80); //background is light grey
   noStroke(); //no stroke
-
+  
   countDownTimerWait--;
 
   if (startTime == 0)
@@ -90,6 +93,12 @@ void draw() {
   if (light>proxSensorThreshold)
     fill(180, 0, 0);
   else
+    if(targets.get(index).action==0)  {
+      image(CCW,bwidth/2,bheight/2,bwidth,bheight);
+    }
+    else  {
+      image(CW,bwidth/2,bheight/2,bwidth,bheight);
+    }
     fill(255, 0, 0);
   ellipse(cursorX, cursorY, 50, 50);
 
@@ -101,6 +110,45 @@ void draw() {
     text("UP", width/2, 150);
   else
     text("DOWN", width/2, 150);
+}
+
+void onGyroscopeEvent(float x, float y, float z)
+{
+  int index = trialIndex;
+  if (userDone || index>=targets.size())
+    return;
+  Target t = targets.get(index);
+  
+  if (t==null)
+    return;
+ 
+  if (light<=proxSensorThreshold && abs(z-prevz)>4 && countDownTimerWait<0) //possible hit event
+  {
+    if (hitTest()==t.target)//check if it is the right target
+    {
+      //println(z-9.8); use this to check z output!
+      if (((z-prevz)>.3 && t.action==0) || ((z-prevz)<-.3 && t.action==1))
+      {
+        System.out.println("Right target, right z direction!");
+        trialIndex++; //next trial!
+      } else
+      {
+        if (trialIndex>0)
+          trialIndex--; //move back one trial as penalty!
+        System.out.println("right target, WRONG z direction!");
+      }
+      countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
+    } 
+  } else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
+  { 
+    System.out.println("wrong round 1 action!"); 
+
+    if (trialIndex>0)
+      trialIndex--; //move back one trial as penalty!
+
+    countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
+  }
+  prevz = z;
 }
 
 void onAccelerometerEvent(float x, float y, float z)
@@ -125,37 +173,37 @@ void onAccelerometerEvent(float x, float y, float z)
      
   }
 
-  Target t = targets.get(index);
+  //Target t = targets.get(index);
 
-  if (t==null)
-    return;
+  //if (t==null)
+  //  return;
  
-  if (light<=proxSensorThreshold && abs(z-9.8)>4 && countDownTimerWait<0) //possible hit event
-  {
-    if (hitTest()==t.target)//check if it is the right target
-    {
-      //println(z-9.8); use this to check z output!
-      if (((z-9.8)>4 && t.action==0) || ((z-9.8)<-4 && t.action==1))
-      {
-        System.out.println("Right target, right z direction!");
-        trialIndex++; //next trial!
-      } else
-      {
-        if (trialIndex>0)
-          trialIndex--; //move back one trial as penalty!
-        System.out.println("right target, WRONG z direction!");
-      }
-      countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
-    } 
-  } else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
-  { 
-    System.out.println("wrong round 1 action!"); 
+  //if (light<=proxSensorThreshold && abs(z-9.8)>4 && countDownTimerWait<0) //possible hit event
+  //{
+  //  if (hitTest()==t.target)//check if it is the right target
+  //  {
+  //    //println(z-9.8); use this to check z output!
+  //    if (((z-9.8)>4 && t.action==0) || ((z-9.8)<-4 && t.action==1))
+  //    {
+  //      System.out.println("Right target, right z direction!");
+  //      trialIndex++; //next trial!
+  //    } else
+  //    {
+  //      if (trialIndex>0)
+  //        trialIndex--; //move back one trial as penalty!
+  //      System.out.println("right target, WRONG z direction!");
+  //    }
+  //    countDownTimerWait=60; //wait roughly 0.5 sec before allowing next trial
+  //  } 
+  //} else if (light<=proxSensorThreshold && countDownTimerWait<0 && hitTest()!=t.target)
+  //{ 
+  //  System.out.println("wrong round 1 action!"); 
 
-    if (trialIndex>0)
-      trialIndex--; //move back one trial as penalty!
+  //  if (trialIndex>0)
+  //    trialIndex--; //move back one trial as penalty!
 
-    countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
-  }
+  //  countDownTimerWait=30; //wait roughly 0.5 sec before allowing next trial
+  //}
 }
 boolean between(float x,float y,float width)  {
   return (x <= y && y <= x+width);
