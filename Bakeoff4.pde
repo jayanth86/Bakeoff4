@@ -96,10 +96,10 @@ void draw() {
     fill(180, 0, 0);
   else  {
     if(targets.get(index).action==0)  {
-      image(CCW,bwidth/2,bheight/2,bwidth,bheight);
+      image(CW,bwidth/2,bheight/4,bwidth,bheight/3);
     }
     else  {
-      image(CW,bwidth/2,bheight/2,bwidth,bheight);
+      image(CW,bwidth/2,3*bheight/2,bwidth,bheight/3);
     }
     fill(255, 0, 0);
   }
